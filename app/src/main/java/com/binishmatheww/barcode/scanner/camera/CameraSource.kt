@@ -85,10 +85,10 @@ class CameraSource(private val graphicOverlay: GraphicOverlay) {
      */
     @Synchronized
     @Throws(IOException::class)
-    internal fun start(surfaceHolder: SurfaceHolder) {
+    internal fun start(surfaceHolder: SurfaceHolder, facing: Int) {
         if (camera != null) return
 
-        camera = createCamera().apply {
+        camera = createCamera(facing).apply {
             setPreviewDisplay(surfaceHolder)
             startPreview()
         }
@@ -168,8 +168,8 @@ class CameraSource(private val graphicOverlay: GraphicOverlay) {
      * @throws IOException if camera cannot be found or preview cannot be processed.
      */
     @Throws(IOException::class)
-    private fun createCamera(): Camera {
-        val camera = Camera.open() ?: throw IOException("There is no back-facing camera.")
+    private fun createCamera(facing: Int): Camera {
+        val camera = Camera.open(facing) ?: throw IOException("There is no ${if(facing == CameraInfo.CAMERA_FACING_BACK) "back-facing" else "front-facing"} camera.")
         val parameters = camera.parameters
         setPreviewAndPictureSize(camera, parameters)
         setRotation(camera, parameters)
@@ -283,7 +283,7 @@ class CameraSource(private val graphicOverlay: GraphicOverlay) {
         // should guarantee that there will be an array to work with.
         val byteArray = ByteArray(bufferSize)
         val byteBuffer = ByteBuffer.wrap(byteArray)
-        check(!(!byteBuffer.hasArray() || !byteBuffer.array()!!.contentEquals(byteArray))) {
+        check(!(!byteBuffer.hasArray() || !byteBuffer.array().contentEquals(byteArray))) {
             // This should never happen. If it does, then we wouldn't be passing the preview content to
             // the underlying detector later.
             "Failed to create valid buffer for camera source."
@@ -304,7 +304,7 @@ class CameraSource(private val graphicOverlay: GraphicOverlay) {
      * associated processing is done for the previous frame, detection on the mostly recently received
      * frame will immediately start on the same thread.
      */
-    private inner class FrameProcessingRunnable internal constructor() : Runnable {
+    private inner class FrameProcessingRunnable : Runnable {
 
         // This lock guards all of the member variables below.
         private val lock = Object()
@@ -314,7 +314,7 @@ class CameraSource(private val graphicOverlay: GraphicOverlay) {
         private var pendingFrameData: ByteBuffer? = null
 
         /** Marks the runnable as active/not active. Signals any blocked threads to continue.  */
-        internal fun setActive(active: Boolean) {
+        fun setActive(active: Boolean) {
             synchronized(lock) {
                 this.active = active
                 lock.notifyAll()
@@ -325,7 +325,7 @@ class CameraSource(private val graphicOverlay: GraphicOverlay) {
          * Sets the frame data received from the camera. This adds the previous unused frame buffer (if
          * present) back to the camera, and keeps a pending reference to the frame data for future use.
          */
-        internal fun setNextFrame(data: ByteArray, camera: Camera) {
+        fun setNextFrame(data: ByteArray, camera: Camera) {
             synchronized(lock) {
                 pendingFrameData?.let {
                     camera.addCallbackBuffer(it.array())

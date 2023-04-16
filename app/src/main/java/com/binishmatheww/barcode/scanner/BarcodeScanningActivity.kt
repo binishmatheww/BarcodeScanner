@@ -45,6 +45,7 @@ class BarcodeScanningActivity : AppCompatActivity(), OnClickListener {
     private var cameraSource: CameraSource? = null
     private var preview: CameraSourcePreview? = null
     private var graphicOverlay: GraphicOverlay? = null
+    private var switchCameraButton: View? = null
     private var retakeButton: View? = null
     private var flashButton: View? = null
     private var promptChip: Chip? = null
@@ -67,6 +68,10 @@ class BarcodeScanningActivity : AppCompatActivity(), OnClickListener {
         promptChipAnimator = (AnimatorInflater.loadAnimator(this, R.animator.bottom_prompt_chip_enter) as AnimatorSet).apply {
                 setTarget(promptChip)
             }
+
+        switchCameraButton = findViewById<View>(R.id.switchCameraButton).apply {
+            setOnClickListener(this@BarcodeScanningActivity)
+        }
 
         retakeButton = findViewById<View>(R.id.retakeButton).apply {
             setOnClickListener(this@BarcodeScanningActivity)
@@ -137,9 +142,17 @@ class BarcodeScanningActivity : AppCompatActivity(), OnClickListener {
 
     override fun onClick(view: View) {
         when (view.id) {
+            R.id.switchCameraButton -> {
+                stopCameraPreview()
+                preview?.facing = if (preview?.facing == Camera.CameraInfo.CAMERA_FACING_BACK) Camera.CameraInfo.CAMERA_FACING_FRONT else Camera.CameraInfo.CAMERA_FACING_BACK
+                startCameraPreview()
+                retakeButton?.visibility = View.GONE
+                promptChip?.visibility = View.GONE
+            }
             R.id.retakeButton -> {
                 stopCameraPreview()
                 startCameraPreview()
+                workflowModel.setWorkflowState(WorkflowState.DETECTING)
                 retakeButton?.visibility = View.GONE
                 promptChip?.visibility = View.GONE
             }

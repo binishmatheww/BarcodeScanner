@@ -17,6 +17,7 @@
 package com.binishmatheww.barcode.scanner.camera
 
 import android.content.Context
+import android.hardware.Camera
 import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceHolder
@@ -40,6 +41,8 @@ class CameraSourcePreview(context: Context, attrs: AttributeSet) : FrameLayout(c
     private var cameraSource: CameraSource? = null
     private var cameraPreviewSize: Size? = null
 
+    var facing = Camera.CameraInfo.CAMERA_FACING_BACK
+
     override fun onFinishInflate() {
         super.onFinishInflate()
         graphicOverlay = findViewById(R.id.camera_preview_graphic_overlay)
@@ -49,7 +52,7 @@ class CameraSourcePreview(context: Context, attrs: AttributeSet) : FrameLayout(c
     fun start(cameraSource: CameraSource) {
         this.cameraSource = cameraSource
         startRequested = true
-        startIfReady()
+        startIfReady(facing)
     }
 
     fun stop() {
@@ -61,9 +64,9 @@ class CameraSourcePreview(context: Context, attrs: AttributeSet) : FrameLayout(c
     }
 
     @Throws(IOException::class)
-    private fun startIfReady() {
+    private fun startIfReady(facing: Int) {
         if (startRequested && surfaceAvailable) {
-            cameraSource?.start(surfaceView.holder)
+            cameraSource?.start(surfaceView.holder, facing)
             requestLayout()
             graphicOverlay?.let { overlay ->
                 cameraSource?.let {
@@ -114,7 +117,7 @@ class CameraSourcePreview(context: Context, attrs: AttributeSet) : FrameLayout(c
         }
 
         try {
-            startIfReady()
+            startIfReady(facing)
         } catch (e: IOException) {
             Log.e(TAG, "Could not start camera source.", e)
         }
@@ -124,7 +127,7 @@ class CameraSourcePreview(context: Context, attrs: AttributeSet) : FrameLayout(c
         override fun surfaceCreated(surface: SurfaceHolder) {
             surfaceAvailable = true
             try {
-                startIfReady()
+                startIfReady(facing)
             } catch (e: IOException) {
                 Log.e(TAG, "Could not start camera source.", e)
             }

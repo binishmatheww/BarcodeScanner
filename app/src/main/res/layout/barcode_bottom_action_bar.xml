@@ -9,6 +9,18 @@
 
 
   <ImageView
+      android:id="@+id/switchCameraButton"
+      android:layout_width="60dp"
+      android:layout_height="60dp"
+      android:layout_gravity="start"
+      android:contentDescription="@string/app_name"
+      android:padding="@dimen/top_action_button_padding"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:srcCompat="@drawable/switch_camera_icon" />
+
+  <ImageView
       android:id="@+id/retakeButton"
       android:layout_width="60dp"
       android:layout_height="60dp"
