@@ -291,8 +291,7 @@ object Utils {
         return RectF(cx - boxWidth / 2, cy - boxHeight / 2, cx + boxWidth / 2, cy + boxHeight / 2)
     }
 
-    fun shouldDelayLoadingBarcodeResult(context: Context): Boolean =
-        getBooleanPref(context, pref_key_delay_loading_barcode_result, true)
+    fun shouldDelayLoadingBarcodeResult(context: Context): Boolean = getBooleanPref(context, pref_key_delay_loading_barcode_result, false)
 
     private fun getIntPref(context: Context, prefKey : String, defaultValue: Int): Int {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
